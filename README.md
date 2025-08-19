@@ -2,6 +2,10 @@
 
 A feature‑rich Markdown editor built with Modern React + Vite + TypeScript.
 
+## Live Demo
+
+https://free-markdown-editor.vercel.app/
+
 ## Features
 
 - Live preview and quick toggle between Editor/Preview

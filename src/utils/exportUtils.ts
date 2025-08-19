@@ -95,7 +95,6 @@ export const convertMarkdownToHTML = (markdownText: string): string => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
@@ -220,7 +219,10 @@ export const convertMarkdownToHTML = (markdownText: string): string => {
 };
 
 // Export functions
-export const exportAsMarkdown = (markdown: string, setShowExportMenu: (show: boolean) => void) => {
+export const exportAsMarkdown = (
+	markdown: string,
+	setShowExportMenu: (show: boolean) => void
+) => {
 	const blob = new Blob([markdown], { type: "text/markdown" });
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");
@@ -231,7 +233,10 @@ export const exportAsMarkdown = (markdown: string, setShowExportMenu: (show: boo
 	setShowExportMenu(false);
 };
 
-export const exportAsHTML = (markdown: string, setShowExportMenu: (show: boolean) => void) => {
+export const exportAsHTML = (
+	markdown: string,
+	setShowExportMenu: (show: boolean) => void
+) => {
 	const htmlContent = convertMarkdownToHTML(markdown);
 	const blob = new Blob([htmlContent], { type: "text/html" });
 	const url = URL.createObjectURL(blob);
@@ -243,7 +248,10 @@ export const exportAsHTML = (markdown: string, setShowExportMenu: (show: boolean
 	setShowExportMenu(false);
 };
 
-export const exportAsPDF = (markdown: string, setShowExportMenu: (show: boolean) => void) => {
+export const exportAsPDF = (
+	markdown: string,
+	setShowExportMenu: (show: boolean) => void
+) => {
 	const printWindow = window.open("", "_blank");
 	if (printWindow) {
 		const htmlContent = convertMarkdownToHTML(markdown);
@@ -258,7 +266,9 @@ export const exportAsPDF = (markdown: string, setShowExportMenu: (show: boolean)
 };
 
 // File import
-export const importMarkdownFile = (handleMarkdownChange: (content: string) => void) => {
+export const importMarkdownFile = (
+	handleMarkdownChange: (content: string) => void
+) => {
 	const input = document.createElement("input");
 	input.type = "file";
 	input.accept = ".md,.txt";
