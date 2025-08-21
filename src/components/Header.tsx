@@ -2,7 +2,15 @@ import React from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useEditorStore } from "../stores/editorStore";
 import Toolbar from "./Toolbar";
-import { Sun, Moon, Eye, Edit3, Check, Clock, Save } from "lucide-react";
+import {
+	Sun,
+	Moon,
+	Check,
+	Clock,
+	Save,
+	Maximize2,
+	Minimize2,
+} from "lucide-react";
 import logo from "@/assets/icons8-markdown-96.png";
 
 interface HeaderProps {
@@ -11,7 +19,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className = "" }) => {
 	const { theme, toggleTheme } = useTheme();
-	const { isPreview, setIsPreview, saveStatus, lastSaved } = useEditorStore();
+	const { isFullscreen, setIsFullscreen, saveStatus, lastSaved } =
+		useEditorStore();
 
 	return (
 		<div
@@ -66,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ className = "" }) => {
 				<div className="flex gap-2 items-center">
 					<button
 						onClick={toggleTheme}
-						className={`p-2 rounded transition-colors duration-200 ${
+						className={`px-3 py-2 rounded-md transition-colors ${
 							theme === "dark"
 								? "bg-slate-700 text-amber-400 hover:bg-slate-600"
 								: "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -76,30 +85,21 @@ const Header: React.FC<HeaderProps> = ({ className = "" }) => {
 					</button>
 
 					<button
-						onClick={() => setIsPreview(!isPreview)}
+						onClick={() => setIsFullscreen(!isFullscreen)}
 						className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
-							isPreview
-								? "bg-green-500 text-white hover:bg-green-600"
-								: "bg-blue-500 text-white hover:bg-blue-600"
+							isFullscreen
+								? "bg-red-500 text-white hover:bg-red-600"
+								: "bg-purple-500 text-white hover:bg-purple-600"
 						}`}
-						title={isPreview ? "Switch to Editor" : "Switch to Preview"}>
-						{isPreview ? (
-							<>
-								<Edit3 size={16} />
-								Editor
-							</>
-						) : (
-							<>
-								<Eye size={16} />
-								Preview
-							</>
-						)}
+						title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+						{isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+						{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
 					</button>
 				</div>
 			</div>
 
-			{/* Toolbar - only show when not in preview mode */}
-			{!isPreview && (
+			{/* Toolbar - only show when not in fullscreen mode */}
+			{!isFullscreen && (
 				<div
 					className={`pt-2 transition-colors duration-200 ${
 						theme === "dark" ? "border-slate-600" : "border-gray-200"
