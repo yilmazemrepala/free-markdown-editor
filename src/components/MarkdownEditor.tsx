@@ -2,7 +2,6 @@ import React from "react";
 import { useEditorStore } from "../stores/editorStore";
 import Preview from "./Preview";
 import WYSIWYGEditor from "./WYSIWYGEditor";
-import ResizableDivider from "./ResizableDivider";
 import StatusBar from "./StatusBar";
 
 interface MarkdownEditorProps {
@@ -10,7 +9,7 @@ interface MarkdownEditorProps {
 }
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ className = "" }) => {
-	const { isFullscreen, leftPanelWidth } = useEditorStore();
+	const { isFullscreen } = useEditorStore();
 
 	return (
 		<div
@@ -20,19 +19,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ className = "" }) => {
 					<Preview className="w-full h-full overflow-y-auto" />
 				) : (
 					// Split view: WYSIWYG + Divider + Preview
-					<>
-						<div
-							className="h-full overflow-hidden"
-							style={{ width: `${leftPanelWidth}%` }}>
-							<WYSIWYGEditor className="w-full h-full" />
-						</div>
-						<ResizableDivider />
-						<div
-							className="h-full overflow-hidden"
-							style={{ width: `${100 - leftPanelWidth}%` }}>
-							<Preview className="w-full h-full overflow-y-auto" />
-						</div>
-					</>
+					<WYSIWYGEditor className="w-full h-full" />
 				)}
 			</div>
 			<StatusBar />
