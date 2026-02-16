@@ -1,7 +1,7 @@
 import React from "react";
 import { useEditorStore } from "../stores/editorStore";
-import Editor from "./Editor";
 import Preview from "./Preview";
+import WYSIWYGEditor from "./WYSIWYGEditor";
 import StatusBar from "./StatusBar";
 
 interface MarkdownEditorProps {
@@ -9,15 +9,17 @@ interface MarkdownEditorProps {
 }
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ className = "" }) => {
-	const { isPreview } = useEditorStore();
+	const { isFullscreen } = useEditorStore();
 
 	return (
-		<div className={`flex flex-col h-full ${className}`}>
+		<div
+			className={`flex flex-col h-full ${className} markdown-editor-container`}>
 			<div className="flex-1 flex overflow-hidden">
-				{isPreview ? (
+				{isFullscreen ? (
 					<Preview className="w-full h-full overflow-y-auto" />
 				) : (
-					<Editor className="w-full h-full" />
+					// Split view: WYSIWYG + Divider + Preview
+					<WYSIWYGEditor className="w-full h-full" />
 				)}
 			</div>
 			<StatusBar />

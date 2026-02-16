@@ -3,22 +3,32 @@ import { create } from "zustand";
 interface EditorState {
 	markdown: string;
 	isPreview: boolean;
+	isWYSIWYG: boolean;
+	isFullscreen: boolean;
 	showExportMenu: boolean;
 	showEmojiMenu: boolean;
 	selectedEmojiCategory: number;
 	saveStatus: "saved" | "saving" | "unsaved";
 	lastSaved: Date | null;
+	leftPanelWidth: number;
+	isResizing: boolean;
 	textareaRef: HTMLTextAreaElement | null;
+	wysiwygRef: HTMLDivElement | null;
 
 	// Actions
 	setMarkdown: (markdown: string) => void;
 	setIsPreview: (isPreview: boolean) => void;
+	setIsWYSIWYG: (isWYSIWYG: boolean) => void;
+	setIsFullscreen: (isFullscreen: boolean) => void;
 	setShowExportMenu: (show: boolean) => void;
 	setShowEmojiMenu: (show: boolean) => void;
 	setSelectedEmojiCategory: (category: number) => void;
 	setSaveStatus: (status: "saved" | "saving" | "unsaved") => void;
 	setLastSaved: (date: Date | null) => void;
+	setLeftPanelWidth: (width: number) => void;
+	setIsResizing: (isResizing: boolean) => void;
 	setTextareaRef: (ref: HTMLTextAreaElement | null) => void;
+	setWysiwygRef: (ref: HTMLDivElement | null) => void;
 
 	// Editor functions
 	insertText: (before: string, after?: string, placeholder?: string) => void;
@@ -50,53 +60,94 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => ({
 	markdown: "",
 	isPreview: false,
+	isWYSIWYG: true,
+	isFullscreen: false,
 	showExportMenu: false,
 	showEmojiMenu: false,
 	selectedEmojiCategory: 0,
 	saveStatus: "saved",
 	lastSaved: null,
+	leftPanelWidth: 50,
+	isResizing: false,
 	textareaRef: null,
+	wysiwygRef: null,
 
 	setMarkdown: (markdown) => set({ markdown }),
 	setIsPreview: (isPreview) => set({ isPreview }),
+	setIsWYSIWYG: (isWYSIWYG) => set({ isWYSIWYG }),
+	setIsFullscreen: (isFullscreen) => set({ isFullscreen }),
 	setShowExportMenu: (show) => set({ showExportMenu: show }),
 	setShowEmojiMenu: (show) => set({ showEmojiMenu: show }),
 	setSelectedEmojiCategory: (category) =>
 		set({ selectedEmojiCategory: category }),
 	setSaveStatus: (status) => set({ saveStatus: status }),
 	setLastSaved: (date) => set({ lastSaved: date }),
+	setLeftPanelWidth: (width) =>
+		set({ leftPanelWidth: Math.max(20, Math.min(80, width)) }),
+	setIsResizing: (isResizing) => set({ isResizing }),
 	setTextareaRef: (ref) => set({ textareaRef: ref }),
+	setWysiwygRef: (ref) => set({ wysiwygRef: ref }),
 
 	insertText: (
 		before: string,
 		after: string = "",
 		placeholder: string = ""
 	) => {
-		const { markdown, textareaRef, handleMarkdownChange } = get();
-		if (!textareaRef) return;
+		const {
+			markdown,
+			textareaRef,
+			wysiwygRef,
+			isWYSIWYG,
+			handleMarkdownChange,
+		} = get();
 
-		const start = textareaRef.selectionStart;
-		const end = textareaRef.selectionEnd;
-		const selectedText = markdown.substring(start, end);
-		const textToInsert = selectedText || placeholder;
+		if (isWYSIWYG && wysiwygRef) {
+			// WYSIWYG mode - insert into contentEditable div
+			const selection = window.getSelection();
+			if (selection && selection.rangeCount > 0) {
+				const range = selection.getRangeAt(0);
+				const selectedText = range.toString() || placeholder;
 
-		const newText =
-			markdown.substring(0, start) +
-			before +
-			textToInsert +
-			after +
-			markdown.substring(end);
+				range.deleteContents();
+				const textNode = document.createTextNode(before + selectedText + after);
+				range.insertNode(textNode);
 
-		handleMarkdownChange(newText);
+				// Update markdown from WYSIWYG content
+				const newMarkdown = wysiwygRef.innerText;
+				handleMarkdownChange(newMarkdown);
 
-		// Set cursor position
-		setTimeout(() => {
-			if (textareaRef) {
-				const newCursorPos = start + before.length + textToInsert.length;
-				textareaRef.setSelectionRange(newCursorPos, newCursorPos);
-				textareaRef.focus();
+				// Set cursor position
+				const newRange = document.createRange();
+				newRange.setStartAfter(textNode);
+				newRange.collapse(true);
+				selection.removeAllRanges();
+				selection.addRange(newRange);
 			}
-		}, 0);
+		} else if (textareaRef) {
+			// Normal textarea mode
+			const start = textareaRef.selectionStart;
+			const end = textareaRef.selectionEnd;
+			const selectedText = markdown.substring(start, end);
+			const textToInsert = selectedText || placeholder;
+
+			const newText =
+				markdown.substring(0, start) +
+				before +
+				textToInsert +
+				after +
+				markdown.substring(end);
+
+			handleMarkdownChange(newText);
+
+			// Set cursor position
+			setTimeout(() => {
+				if (textareaRef) {
+					const newCursorPos = start + before.length + textToInsert.length;
+					textareaRef.setSelectionRange(newCursorPos, newCursorPos);
+					textareaRef.focus();
+				}
+			}, 0);
+		}
 	},
 
 	handleMarkdownChange: (value: string) => {
@@ -123,7 +174,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 	insertCode: () => get().insertText("`", "`", "code"),
 	insertCodeBlock: () => get().insertText("```\n", "\n```", "code block"),
 	insertLink: () => get().insertText("[", "](url)", "link text"),
-	insertImage: () => get().insertText("![", "](image-url)", "image description"),
+	insertImage: () =>
+		get().insertText("![", "](image-url)", "image description"),
 	insertHorizontalRule: () => get().insertText("\n---\n", "", ""),
 	insertTable: () => {
 		const tableText =
